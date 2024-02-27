@@ -1,0 +1,5 @@
+modeling/models/
+modeling/hyperparameters/
+**/__pycache__/
+prototypes/
+results/

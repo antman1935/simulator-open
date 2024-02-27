@@ -1,2 +1,4 @@
 # simulator
-suite for building a simulator with pre-existing data
+This is a simulator for generic multivariate timeseries. It uses the concepts and code from this paper (https://proceedings.neurips.cc/paper/2020/file/4a5876b450b45371f6cfe5047ac8cd45-Paper.pdf). 
+
+The intention of the project is to model complex objects that take in multiple parameters, either as raw user input or output from another object, and produce their own set of output timeseries. For an object we wish to model, we need to have a dataset that consists of all of the input timeseries and the output timeseries collected from the object. We train a CDE model (see the linked paper) using the dataset. For each real life object, we have a model that can behave as the object when given the input timeseries.
