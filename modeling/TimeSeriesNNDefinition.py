@@ -1,4 +1,5 @@
 from modeling.NeuralNetworkDefinition import NeuralNetworkDefinition
+from util.Exportable import ExportableType
 
 """
 This is the primary class of neural networks that this repository is
@@ -39,7 +40,15 @@ data is prepared and cleaned.
       where j < k <= j+f.
 """
 class TimeSeriesNNDefinition(NeuralNetworkDefinition):
-    def __init__(self, datasource: str, input_features: list[str], output_features: list[str], frame_size: int, overlap: float =0.99, maximum_frames:int = 0, epochs = 2, train_batch_size:int = 8):
+    def __init__(self, 
+                 datasource: str, 
+                 input_features: list[str], 
+                 output_features: list[str], 
+                 frame_size: int, 
+                 overlap: float =0.99, 
+                 maximum_frames:int = 0, 
+                 epochs = 2, 
+                 train_batch_size:int = 8):
         self.datasource = datasource
         self.input_features = input_features
         self.output_features = output_features
@@ -49,15 +58,21 @@ class TimeSeriesNNDefinition(NeuralNetworkDefinition):
         self.epochs = epochs
         self.train_batch_size = train_batch_size
     
-    def export(self) -> dict:
-        defn = super().export()
-        defn["datasource"] = self.datasource
-        defn["input_features"] = self.input_features
-        defn["output_features"] = self.output_features
-        defn["frame_size"] = self.frame_size
-        defn["overlap"] = self.overlap
-        defn["maximum_frames"] = self.maximum_frames
-        defn["epochs"] = self.epochs
-        defn["train_batch_size"] = self.train_batch_size
+    def getExportType(self) -> ExportableType:
+        return ExportableType.Model
 
-        return defn
+    def export_keys(self) -> list[dict]:
+        running = super().export_keys()
+        running.append(
+          {
+            "datasource": self.datasource,
+            "input_features": self.input_features,
+            "output_features": self.output_features,
+            "frame_size": self.frame_size,
+            "overlap": self.overlap,
+            "maximum_frames": self.maximum_frames,
+            "epochs": self.epochs,
+            "train_batch_size": self.train_batch_size
+          }
+        )
+        return running

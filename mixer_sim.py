@@ -1,15 +1,35 @@
 from simulating.MixerSimulation import MixerConfig, Mixer, Valve
 from simulating.Simulation import Simulator
-from modeling.TimeSeriesNNRunner import TimeSeriersNNRunner, load_tsnn_definition
+from modeling.TimeSeriesNNRunner import TimeSeriersNNRunner
+from util.Exportable import Exportable, ExportableType
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     # Define the models we want to load from a file
-    temp_model_id = "1825835231"
-    level_model_id = "1789266116"
+    # 256-RRN level, 256-RNN w/ Conv temp
+    # temp_model_id = "dc593797-fd6b0d30"
+    # level_model_id = "b478c98b-f98110f3"
+
+    # 256-RRN level, 512-RNN w/ Conv temp
+    # temp_model_id = "9f5b9773-8313d5cf"
+    # level_model_id = "b478c98b-f98110f3"
+
+    # 256-RNN level, 128x128RNN w/ Conv
+    # temp_model_id = "1307207-453533fd"
+    # level_model_id = "b478c98b-f98110f3"
+
+    # 256-RNN level, 128(bi)x128RNN w/ Conv
+    # temp_model_id = "ffb4c6ef-5ea62e0f"
+    # level_model_id = "b478c98b-f98110f3"
+
+    # 256-RNN level, 256(bi)x256RNN w/ Conv
+    temp_model_id = "c96605d-69845ace"
+    level_model_id = "b478c98b-f98110f3"
     
-    level_model_defn = load_tsnn_definition(level_model_id)
-    temp_model_defn = load_tsnn_definition(temp_model_id)
+    
+    
+    level_model_defn = Exportable.loadExportable(ExportableType.Model, level_model_id)
+    temp_model_defn = Exportable.loadExportable(ExportableType.Model, temp_model_id)
 
     level_model, _ = TimeSeriersNNRunner(level_model_defn).load()
     temp_model, _ = TimeSeriersNNRunner(temp_model_defn).load()
@@ -31,26 +51,32 @@ if __name__ == "__main__":
         match (step):
             case 0:
                 if mixer.level < 600 and outlet.position == 0:
-                    inlet1.open()
+                    inlet1.cls_ref.set(True)
+                    inlet1.ols_ref.set(True)
                 elif mixer.level >= 600:
-                    inlet1.close()
+                    inlet1.cls_ref.set(False)
+                    inlet1.ols_ref.set(False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
-            case 30:
+            case 3:
                 if mixer.level < 980 and inlet1.position == 0:
-                    inlet2.open()
+                    inlet2.cls_ref.set(True)
+                    inlet2.ols_ref.set(True)
                 elif mixer.level >= 980:
-                    inlet2.close()
+                    inlet2.cls_ref.set(False)
+                    inlet2.ols_ref.set(False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
-            case 45:
+            case 18:
                 if mixer.level > 0 and inlet2.position == 0:
-                    outlet.open()
+                    outlet.cls_ref.set(True)
+                    outlet.ols_ref.set(True)
                 elif mixer.level == 0:
-                    outlet.close()
+                    outlet.cls_ref.set(False)
+                    outlet.ols_ref.set(False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
-            case 46:
+            case 19:
                 # rollover to start again
                 step = 0
             case _:

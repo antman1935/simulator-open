@@ -22,7 +22,7 @@ class CDEFunc(torch.nn.Module):
         ######################
         super(CDEFunc, self).__init__()
         self.input_channels = input_channels
-        self.hidden_channels = hidden_layer_widths[0]
+        self.hidden_channels = hidden_channels
 
         # the first hidden layer is passed in directly so that it is accessible in the
         # NCDE class.
@@ -110,11 +110,19 @@ class NeuralCDE(torch.nn.Module):
         return pred_y
     
 class NeuralCDEDefinition(TimeSeriesNNDefinition):
-    def __init__(self, datasource: str, input_features: list[str], output_features: list[str], frame_size: int, overlap: float = 0.99, maximum_frames: int = 0, epochs=2, train_batch_size: int = 8, 
-                    hidden_channels: int = 128, 
-                    hidden_layer_widths: list[int] = [128], 
-                    dropout_layers: list[float] = [True, True], 
-                    interpolation="cubic"):
+    def __init__(self,
+                 datasource: str, 
+                 input_features: list[str], 
+                 output_features: list[str], 
+                 frame_size: int, 
+                 overlap: float = 0.99, 
+                 maximum_frames: int = 0, 
+                 epochs=2, 
+                 train_batch_size: int = 8, 
+                 hidden_channels: int = 128, 
+                 hidden_layer_widths: list[int] = [128], 
+                 dropout_layers: list[float] = [True, True], 
+                 interpolation="cubic"):
         super().__init__(datasource, input_features, output_features, frame_size, overlap, maximum_frames, epochs, train_batch_size)
         self.input_channels = len(input_features) + 1
         self.hidden_channels = hidden_channels
@@ -124,7 +132,7 @@ class NeuralCDEDefinition(TimeSeriesNNDefinition):
         self.dropout_layers = dropout_layers
 
         assert len(hidden_layer_widths) > 0, "CDEFunc requires that we have at least one hidden layer"
-        assert len(hidden_layer_widths) + 1  == len(dropout_layers), "There should be a dropout layer setting for the input to each hidden layer."
+        assert len(hidden_layer_widths) + 1  == len(dropout_layers), "There should be a dropout layer setting for the input to each layer."
 
         self.interpolation = interpolation
 
@@ -138,13 +146,16 @@ class NeuralCDEDefinition(TimeSeriesNNDefinition):
                          self.dropout_layers,
                          self.interpolation)
     
-    def export(self) -> dict:
-        defn = super().export()
-        defn["hidden_channels"] = self.hidden_channels
-        defn["hidden_layer_widths"] = self.hidden_layer_widths
-        defn["dropout_layers"] = self.dropout_layers
-        defn["interpolation"] = self.interpolation
-
-        return defn
+    def export_keys(self) -> list[dict]:
+        running = super().export_keys()
+        running.append(
+          {
+            "hidden_channels": self.hidden_channels,
+            "hidden_layer_widths": self.hidden_layer_widths,
+            "dropout_layers": self.dropout_layers,
+            "interpolation": self.interpolation
+          }
+        )
+        return running
 
 
