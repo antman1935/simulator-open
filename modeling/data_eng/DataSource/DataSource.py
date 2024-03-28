@@ -1,5 +1,8 @@
 from util.Exportable import Exportable, ExportableType
 import pandas as pd
+import pickle
+import os
+
 
 """
 This class represents a source of data that can produce data usable by our DataSet class.
@@ -9,13 +12,15 @@ It produces a set of dataframes, each dataframe having the following qualities:
     * The frame is resampled to have self.freq_ms milliseconds between each datapoint.
 """
 class DataSource(Exportable):
-    def __init__(self, time_col: str, min_frame_size: int, gap_ms: int = 3000, freq_ms: int = 1000):
+    _path = 'modeling/datasources'
+    def __init__(self, time_col: str, min_frame_size: int, gap_ms: int = 3000, freq_ms: int = 1000, persist: bool = False):
         assert gap_ms > 0, "The maximum gap between records must be positive"
         assert min_frame_size > 0, "The minimum frame size has to be > 0"
         self.time_col = time_col
         self.min_frame_size = min_frame_size
         self.gap_ms = gap_ms
         self.freq_ms = freq_ms
+        self.persist = persist
 
     
     def getExportType(self) -> ExportableType:
@@ -35,6 +40,19 @@ class DataSource(Exportable):
     is resampled to the desired frequency.
     """
     def loadDataFrames(self) -> list[pd.DataFrame]:
+        id = self.exportableDescriptor()
+        # save config to file if not already there.
+        if not self.fileAlreadyExists():
+            self.saveToFile(toJson=True)
+
+        # if persistence is turned on, attempt to read file from disk
+        if self.persist:
+            path = f"{DataSource._path}/{id}.source"
+            if os.path.exists(path):
+                with open(path, "rb") as openfile:
+                    dfs = pickle.load(openfile)
+                return dfs
+
         import util.progress as progress
         df = self.loadData()
         df = df.assign(**{"time_diff": df[self.time_col].diff()})
@@ -76,6 +94,11 @@ class DataSource(Exportable):
             dfs[i] = (dfs[i] - dfs[i].min()) / (dfs[i].max() - dfs[i].min())
             progress.bar(i, len(dfs) - 1)
         
+        if self.persist:
+            path = f"{DataSource._path}/{id}.source"
+            with open(path, "wb+") as outfile:
+                pickle.dump(dfs, outfile)
+
         return dfs
     
     def export_keys(self) -> list[dict]:
@@ -89,3 +112,8 @@ class DataSource(Exportable):
           }
         )
         return running
+    
+
+if True:
+    from pathlib import Path
+    Path(DataSource._path).mkdir(parents=True, exist_ok=True)

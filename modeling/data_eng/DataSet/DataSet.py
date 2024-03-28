@@ -1,14 +1,18 @@
 from modeling.data_eng.DataSource.DataSource import DataSource
 from util.Exportable import Exportable, ExportableType
 import pandas as pd
+import pickle
+import os
 
 """
 This class takes a DataSource and transforms it into a form usable for training
 neural network models.
 """
 class DataSet(Exportable):
-    def __init__(self, source: DataSource):
+    _path = "modeling/datasets"
+    def __init__(self, source: DataSource, persist: bool = False):
         self.source = source
+        self.persist = persist
     
     def getExportType(self) -> ExportableType:
         return ExportableType.DataSet
@@ -22,8 +26,27 @@ class DataSet(Exportable):
         raise Exception("Unimplemented")
     
     def get(self):
+        id = self.exportableDescriptor()
+        # save config to file if not already there.
+        if not self.fileAlreadyExists():
+            self.saveToFile(toJson=True)
+
+        if self.persist:
+            path = f"{DataSet._path}/{id}.ds"
+            if os.path.exists(path):
+                with open(path, "rb") as openfile:
+                    formatted_data = pickle.load(openfile)
+                return formatted_data
+            
         frames = self.source.loadDataFrames()
-        return self.formatData(frames)
+        formatted_data = self.formatData(frames)
+
+        if self.persist:
+            path = f"{DataSet._path}/{id}.ds"
+            with open(path, "wb+") as outfile:
+                pickle.dump(formatted_data, outfile)
+
+        return formatted_data
     
     def export_keys(self) -> list[dict]:
         running = super().export_keys()
@@ -33,3 +56,7 @@ class DataSet(Exportable):
           }
         )
         return running
+    
+if True:
+    from pathlib import Path
+    Path(DataSet._path).mkdir(parents=True, exist_ok=True)

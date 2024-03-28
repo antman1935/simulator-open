@@ -32,12 +32,18 @@ class ExportableType(Enum):
 def relative_path_prefix(type: ExportableType):
     paths = {
         ExportableType.Model: 'modeling/hyperparameters',
-        ExportableType.DataSource: 'modeling/datasources',
-        ExportableType.DataSet: 'modeling/datasets',
+        ExportableType.DataSource: 'modeling/datasource_configs',
+        ExportableType.DataSet: 'modeling/dataset_configs',
     }
     if not type in paths.keys():
         raise Exception("Invalid ExportableType")
     return paths[type]
+
+# guarantee the paths exist
+if True:
+    from pathlib import Path
+    for e in ExportableType:
+        Path(relative_path_prefix(e)).mkdir(parents=True, exist_ok=True)
 
 """
 Represents a configuration object that can be exported to a pickle and reloaded
@@ -140,7 +146,6 @@ class Exportable:
         
         obj = None
         with open(path, "rb") as openfile:
-            # Reading from json file
             obj = pickle.load(openfile)
 
         return obj

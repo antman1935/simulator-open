@@ -1,5 +1,7 @@
 modeling/models/
 modeling/hyperparameters/
+modeling/dataset*
+modeling/datasource*
 **/__pycache__/
 prototypes/
 results/

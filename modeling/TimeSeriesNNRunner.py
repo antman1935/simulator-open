@@ -63,17 +63,6 @@ class TimeSeriersNNRunner:
         # TODO: makce an enum for controlling this, leave as default for now
         optimizer = torch.optim.Adam(model.parameters())
 
-        # TODO: Replace this code with code that attempts to load an existing dataset and falls
-        # further back in the pipeline.
-        #   if dataset_artifact exists:
-        #       load dataset from disk and train
-        #   elif datasource artifact exists:
-        #       load source and create dataset
-        #       train on dataset
-        #   else
-        #       create datasource
-        #       create dataset
-        #       train on dataset
         # TODO: The code below is specific to a PyTorchDataSet. Look into AutoTS/other libraries
         # to see how this might be made generic
         # preprocess it so that we can input it into our training/testing

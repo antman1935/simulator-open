@@ -27,6 +27,7 @@ if __name__ == "__main__":
             csv_name="mixer simulation dataset.csv",
             series= inputs + outputs,
             min_frame_size=datapoint_length,
+            persist=True,
         )
         dataset = PyTorchDataSet(
             source=source,
@@ -35,7 +36,8 @@ if __name__ == "__main__":
             output_features=outputs,
             overlap=1,
             max_dataset_size=0,
-            cubic_interp=False
+            cubic_interp=False,
+            persist=True,
         )
         defn = ForecastRNNDefinition(
             dataset=dataset,

@@ -5,8 +5,8 @@ import pandas as pd
 This class reads a csv exported from Aveva Historian and does some transformations to make a dataset.
 """
 class AvevaHistorianDataSource(DataSource):
-    def __init__(self, csv_name: str, series: list[str], min_frame_size: int, timestamp_series: str = "DateTime", gap_ms: int = 3000, freq_ms: int = 1000):
-        super().__init__(timestamp_series, min_frame_size, gap_ms=gap_ms, freq_ms=freq_ms)
+    def __init__(self, csv_name: str, series: list[str], min_frame_size: int, timestamp_series: str = "DateTime", gap_ms: int = 3000, freq_ms: int = 1000, persist: bool = False):
+        super().__init__(timestamp_series, min_frame_size, gap_ms=gap_ms, freq_ms=freq_ms, persist=persist)
         self.csv_name = csv_name
         self.series = series
         self.series.append(timestamp_series)

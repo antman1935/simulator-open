@@ -9,8 +9,8 @@ This class takes a DataSource and transforms it into a form usable for training
 neural network models.
 """
 class PyTorchDataSet(DataSet):
-    def __init__(self, source: DataSource, datapoint_length: int, input_features: list[str], output_features: list[str], overlap: float = 0.25, max_dataset_size: int = 0, cubic_interp: bool = False):
-        super().__init__(source)
+    def __init__(self, source: DataSource, datapoint_length: int, input_features: list[str], output_features: list[str], overlap: float = 0.25, max_dataset_size: int = 0, cubic_interp: bool = False, persist: bool = False):
+        super().__init__(source, persist=persist)
         self.datapoint_length = datapoint_length
         self.input_features = input_features
         self.output_features = output_features
