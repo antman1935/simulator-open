@@ -9,8 +9,8 @@ class Valve(SimObject):
         self._ols = False
         self._open = False
         self.position = 0
-        self.cls_ref = Reference(0, 0, 1)
-        self.ols_ref = Reference(0, 0, 1)
+        self.cls_ref = Reference(0, 0, 1, read_only=False)
+        self.ols_ref = Reference(0, 0, 1, read_only=False)
         self.position_ref = Reference(0, 0, 100)
 
     def step(self):
@@ -24,7 +24,7 @@ class Valve(SimObject):
             self.position = max(0, self.position - 20)
 
     def updateReferences(self):
-       self.position_ref.set(self.position)
+       self.position_ref.update(self.position)
 
     def getReferences(self) -> list[tuple[str, Reference]]:
         return [("Position", self.position_ref), ("OLS", self.ols_ref), ("CLS", self.cls_ref)]
@@ -52,7 +52,7 @@ class MixerLevelModel(ModeledObject):
                 self.level = 0
 
     def updateReferences(self):
-        self.level_ref.set(self.level)
+        self.level_ref.update(self.level)
 
     def getReferences(self) -> list[tuple[str, Reference]]:
         return [("Level", self.level_ref)]
@@ -80,29 +80,32 @@ class MixerTemperatureModel(ModeledObject):
             self.temp = min(max(0, self.output[0][0].item() + self.output[0][1].item()), 1.2) * 45 + 120
 
     def updateReferences(self):
-        self.temperature_ref.set(self.temp)
+        self.temperature_ref.update(self.temp)
 
     def getReferences(self) -> list[tuple[str, Reference]]:
         return [("Temperature", self.temperature_ref)]
     
 class MixerConfig:
-    def __init__(self, level_model: torch.nn.Module, temp_model: torch.nn.Module, level_model_frames: int, temp_model_frames: int, inlet1_position: Reference, inlet2_position: Reference, outlet_position: Reference):
+    def __init__(self, level_model: torch.nn.Module, temp_model: torch.nn.Module, level_model_frames: int, temp_model_frames: int, inlet1: Valve, inlet2: Valve, outlet: Valve):
         self.level_model = level_model
         self.level_model_frames = level_model_frames
 
         self.temp_model = temp_model
         self.temp_model_frames = temp_model_frames
 
-        self.inlet1_position = inlet1_position
-        self.inlet2_position = inlet2_position
-        self.outlet_position = outlet_position
+        self.inlet1 = inlet1
+        self.inlet2 = inlet2
+        self.outlet = outlet
     
 class Mixer(SimObject):
     def __init__(self, config: MixerConfig):
-        self._level_model = MixerLevelModel(config.level_model, config.level_model_frames, config.inlet1_position, config.inlet2_position, config.outlet_position)
-        self._temp_model = MixerTemperatureModel(config.temp_model, config.temp_model_frames, config.inlet1_position, config.inlet2_position, config.outlet_position, self._level_model.level_ref)
+        self._level_model = MixerLevelModel(config.level_model, config.level_model_frames, config.inlet1.position_ref, config.inlet2.position_ref, config.outlet.position_ref)
+        self._temp_model = MixerTemperatureModel(config.temp_model, config.temp_model_frames, config.inlet1.position_ref, config.inlet2.position_ref, config.outlet.position_ref, self._level_model.level_ref)
         self.level = self._level_model.level
         self.temp = self._temp_model.temp
+        self.inlet1 = config.inlet1
+        self.inlet2 = config.inlet2
+        self.outlet = config.outlet
 
     def step(self):
         self._level_model.step()
@@ -115,5 +118,9 @@ class Mixer(SimObject):
         self._temp_model.updateReferences()
 
     def getReferences(self) -> list[tuple[str, Reference]]:
-        return self._level_model.getReferences() + self._temp_model.getReferences()
+        return self._level_model.getReferences() + \
+                self._temp_model.getReferences() + \
+                [(f"Inlet1.{ref_name}", ref) for ref_name, ref in self.inlet1.getReferences()] + \
+                [(f"Inlet2.{ref_name}", ref) for ref_name, ref in self.inlet2.getReferences()] + \
+                [(f"Outlet.{ref_name}", ref) for ref_name, ref in self.outlet.getReferences()]
     

@@ -56,8 +56,8 @@ def simulation_runner(simulation_defn, inQueue, outQueue):
     # TODO: define a simulation definition class to generate a simulation from
     # a static definition here.
     # load simulation file and instantiate all objects in a simulator env
-    temp_model_id = "c96605d-69845ace"
-    level_model_id = "b478c98b-f98110f3"
+    temp_model_id = "9b6d688e-1a0ac5c1"
+    level_model_id = "9e4d503d-4a31070"
     
     level_model_defn = Exportable.loadExportable(ExportableType.Model, level_model_id)
     temp_model_defn = Exportable.loadExportable(ExportableType.Model,temp_model_id)
@@ -70,7 +70,7 @@ def simulation_runner(simulation_defn, inQueue, outQueue):
     inlet1 = sim.AddObject("Inlet1", Valve())
     inlet2 = sim.AddObject("Inlet2", Valve())
     outlet = sim.AddObject("Outlet", Valve())
-    config = MixerConfig(level_model, temp_model, level_model_defn.datapoint_length, temp_model_defn.datapoint_length, sim.ref("Inlet1.Position"), sim.ref("Inlet2.Position"), sim.ref("Outlet.Position"))
+    config = MixerConfig(level_model, temp_model, level_model_defn.datapoint_length, temp_model_defn.datapoint_length, inlet1, inlet2, outlet)
     mixer = sim.AddObject("Mixer", Mixer(config))
 
     runtime = 0

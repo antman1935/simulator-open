@@ -39,7 +39,7 @@ if __name__ == "__main__":
     inlet1 = sim.AddObject("Inlet1", Valve())
     inlet2 = sim.AddObject("Inlet2", Valve())
     outlet = sim.AddObject("Outlet", Valve())
-    config = MixerConfig(level_model, temp_model, level_model_defn.datapoint_length, temp_model_defn.datapoint_length, sim.ref("Inlet1.Position"), sim.ref("Inlet2.Position"), sim.ref("Outlet.Position"))
+    config = MixerConfig(level_model, temp_model, level_model_defn.datapoint_length, temp_model_defn.datapoint_length, inlet1, inlet2, outlet)
     mixer = sim.AddObject("Mixer", Mixer(config))
 
     # Run the simulation and generate new timeseries from model

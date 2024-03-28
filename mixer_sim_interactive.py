@@ -27,30 +27,30 @@ if __name__ == "__main__":
         time.sleep(0.9)
         match (step):
             case 0:
-                if simServer.getReferenceValue("Mixer.Level") < 600 and simServer.getReferenceValue("Outlet.Position") == 0:
-                    simServer.setReferenceValue("Inlet1.CLS", True)
-                    simServer.setReferenceValue("Inlet1.OLS", True)
+                if simServer.getReferenceValue("Mixer.Level") < 600 and simServer.getReferenceValue("Mixer.Outlet.Position") == 0:
+                    simServer.setReferenceValue("Mixer.Inlet1.CLS", True)
+                    simServer.setReferenceValue("Mixer.Inlet1.OLS", True)
                 elif simServer.getReferenceValue("Mixer.Level") >= 600:
-                    simServer.setReferenceValue("Inlet1.CLS", False)
-                    simServer.setReferenceValue("Inlet1.OLS", False)
+                    simServer.setReferenceValue("Mixer.Inlet1.CLS", False)
+                    simServer.setReferenceValue("Mixer.Inlet1.OLS", False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
             case 3:
-                if simServer.getReferenceValue("Mixer.Level") < 980 and simServer.getReferenceValue("Inlet1.Position") == 0:
-                    simServer.setReferenceValue("Inlet2.CLS", True)
-                    simServer.setReferenceValue("Inlet2.OLS", True)
+                if simServer.getReferenceValue("Mixer.Level") < 980 and simServer.getReferenceValue("Mixer.Inlet1.Position") == 0:
+                    simServer.setReferenceValue("Mixer.Inlet2.CLS", True)
+                    simServer.setReferenceValue("Mixer.Inlet2.OLS", True)
                 elif simServer.getReferenceValue("Mixer.Level") >= 980:
-                    simServer.setReferenceValue("Inlet2.CLS", False)
-                    simServer.setReferenceValue("Inlet2.OLS", False)
+                    simServer.setReferenceValue("Mixer.Inlet2.CLS", False)
+                    simServer.setReferenceValue("Mixer.Inlet2.OLS", False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
             case 18:
-                if simServer.getReferenceValue("Mixer.Level") > 0 and simServer.getReferenceValue("Inlet2.Position") == 0:
-                    simServer.setReferenceValue("Outlet.CLS", True)
-                    simServer.setReferenceValue("Outlet.OLS", True)
+                if simServer.getReferenceValue("Mixer.Level") > 0 and simServer.getReferenceValue("Mixer.Inlet2.Position") == 0:
+                    simServer.setReferenceValue("Mixer.Outlet.CLS", True)
+                    simServer.setReferenceValue("Mixer.Outlet.OLS", True)
                 elif simServer.getReferenceValue("Mixer.Level") == 0:
-                    simServer.setReferenceValue("Outlet.CLS", False)
-                    simServer.setReferenceValue("Outlet.OLS", False)
+                    simServer.setReferenceValue("Mixer.Outlet.CLS", False)
+                    simServer.setReferenceValue("Mixer.Outlet.OLS", False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
             case 19:
