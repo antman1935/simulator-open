@@ -19,9 +19,8 @@ if __name__ == "__main__":
         inputs = ['Mixer100_Inlet1_Position',
                                 'Mixer100_Inlet2_Position',
                                 'Mixer100_Outlet_Position',
-                                'Mixer100_Level_PV',
-                                'Mixer100_Temperature_PV']
-        outputs = ['Mixer100_Temperature_PV']
+                                'Mixer100_Level_PV']
+        outputs = ['Mixer100_Level_PV']
         datapoint_length = 8
         source = AvevaHistorianDataSource(
             csv_name="mixer simulation dataset.csv",
@@ -47,7 +46,7 @@ if __name__ == "__main__":
             epochs=2,
             train_batch_size=8,
             layers=[
-                ("LSTM", 512, {"bidirectional": True}),
+                # ("LSTM", 512, {"bidirectional": True}),
                 ("LSTM", 256, {})
             ],
             convolution=True)

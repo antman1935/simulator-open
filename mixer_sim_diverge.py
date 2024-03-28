@@ -23,8 +23,8 @@ if __name__ == "__main__":
     # level_model_id = "b478c98b-f98110f3"
 
     # 256-RNN level, 256(bi)x256RNN w/ Conv
-    temp_model_id = "c96605d-69845ace"
-    level_model_id = "b478c98b-f98110f3"
+    temp_model_id = "9b6d688e-1a0ac5c1"
+    level_model_id = "9e4d503d-4a31070"
     
     
     
@@ -59,7 +59,25 @@ if __name__ == "__main__":
                     print(f"step {step} complete at iter {iter}")
                     step += 1
             case 3:
-                if mixer.level < 980 and inlet1.position == 0:
+                if mixer.level < 850 and inlet1.position == 0:
+                    inlet2.cls_ref.set(True)
+                    inlet2.ols_ref.set(True)
+                elif mixer.level >= 850:
+                    inlet2.cls_ref.set(False)
+                    inlet2.ols_ref.set(False)
+                    print(f"step {step} complete at iter {iter}")
+                    step += 1
+            case 4:
+                if mixer.level > 250 and inlet2.position == 0:
+                    outlet.cls_ref.set(True)
+                    outlet.ols_ref.set(True)
+                elif mixer.level <= 250:
+                    outlet.cls_ref.set(False)
+                    outlet.ols_ref.set(False)
+                    print(f"step {step} complete at iter {iter}")
+                    step += 1
+            case 5:
+                if mixer.level < 980 and outlet.position == 0:
                     inlet2.cls_ref.set(True)
                     inlet2.ols_ref.set(True)
                 elif mixer.level >= 980:
@@ -67,7 +85,7 @@ if __name__ == "__main__":
                     inlet2.ols_ref.set(False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
-            case 18:
+            case 20:
                 if mixer.level > 0 and inlet2.position == 0:
                     outlet.cls_ref.set(True)
                     outlet.ols_ref.set(True)
@@ -76,7 +94,7 @@ if __name__ == "__main__":
                     outlet.ols_ref.set(False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
-            case 19:
+            case 21:
                 # rollover to start again
                 step = 0
             case _:

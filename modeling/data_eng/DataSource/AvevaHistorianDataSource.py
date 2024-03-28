@@ -18,15 +18,15 @@ class AvevaHistorianDataSource(DataSource):
         df = pd.read_csv(self.csv_name, low_memory=False)
         print(f"Initial dataset size: {df.size} rows")
 
+        # TODO: customize filtering and data cleaning
+        # TODO: Throw out all columns that are constant
+        df = df[df['Mixer100_Temperature_PV'] >= 120]
+
         # drop unnecessary columns
         df.drop([column for column in df.columns if not column in self.series], axis='columns', inplace=True)
 
         # filter out null values at the beginning and end
         df.dropna(inplace=True)
-
-        # TODO: customize filtering and data cleaning
-        # TODO: Throw out all columns that are constant
-        df = df[df['Mixer100_Temperature_PV'] >= 120]
         print(f"Filtering done. {df.size} rows remaining.")
 
         df['DateTime'] = pd.to_datetime(df["DateTime"])
