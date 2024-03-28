@@ -56,8 +56,8 @@ def simulation_runner(simulation_defn, inQueue, outQueue):
     # TODO: define a simulation definition class to generate a simulation from
     # a static definition here.
     # load simulation file and instantiate all objects in a simulator env
-    temp_model_id = "5601d311-ca5d08df"
-    level_model_id = "64d7625d-4895b279"
+    temp_model_id = "c96605d-69845ace"
+    level_model_id = "b478c98b-f98110f3"
     
     level_model_defn = Exportable.loadExportable(ExportableType.Model, level_model_id)
     temp_model_defn = Exportable.loadExportable(ExportableType.Model,temp_model_id)

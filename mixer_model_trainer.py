@@ -25,7 +25,7 @@ if __name__ == "__main__":
             frame_size=8,
             overlap=1,
             maximum_frames=0,
-            epochs=4,
+            epochs=5,
             train_batch_size=8,
             layers=[
                 ("LSTM", 512, {"bidirectional": True}),

@@ -39,11 +39,7 @@ def read_csv(name, frame_length, gap_sec = 3):
 
     # filter out null values at the beginning and end
     df.dropna(inplace=True)
-    # print("Orig", df.size)
-    # df = df[df != 'NaN']
-    # print("Post", df.size)
-    # df = df[df == torch.nan]
-    # print("PostPost", df.size)
+
     # TODO: customize filtering and data cleaning
     # TODO: Throw out all columns that are constant
     df = df[df['Mixer100_Temperature_PV'] >= 120]
@@ -148,10 +144,6 @@ def create_datasets(dfs: list[pd.DataFrame], input_features, output_features, de
     
     [train, test, _] =  torch.utils.data.random_split(torch.utils.data.TensorDataset(X, y), [(1.0-throw_away) * 0.8, (1.0-throw_away) * 0.2, throw_away])
     return train, test
-        
-
-
-
 
 if __name__ == "__main__":
     sys.path.append(os.getcwd())

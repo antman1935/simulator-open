@@ -35,7 +35,7 @@ if __name__ == "__main__":
                     simServer.setReferenceValue("Inlet1.OLS", False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
-            case 30:
+            case 3:
                 if simServer.getReferenceValue("Mixer.Level") < 980 and simServer.getReferenceValue("Inlet1.Position") == 0:
                     simServer.setReferenceValue("Inlet2.CLS", True)
                     simServer.setReferenceValue("Inlet2.OLS", True)
@@ -44,7 +44,7 @@ if __name__ == "__main__":
                     simServer.setReferenceValue("Inlet2.OLS", False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
-            case 50:
+            case 18:
                 if simServer.getReferenceValue("Mixer.Level") > 0 and simServer.getReferenceValue("Inlet2.Position") == 0:
                     simServer.setReferenceValue("Outlet.CLS", True)
                     simServer.setReferenceValue("Outlet.OLS", True)
@@ -53,7 +53,7 @@ if __name__ == "__main__":
                     simServer.setReferenceValue("Outlet.OLS", False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
-            case 51:
+            case 19:
                 # rollover to start again
                 step = 0
                 loops += 1
