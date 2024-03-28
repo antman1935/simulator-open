@@ -1,5 +1,4 @@
 from modeling.TimeSeriesNNDefinition import TimeSeriesNNDefinition
-from modeling.data_eng.DataImport import read_csv, create_datasets
 from datetime import datetime
 import json
 import math
@@ -64,10 +63,22 @@ class TimeSeriersNNRunner:
         # TODO: makce an enum for controlling this, leave as default for now
         optimizer = torch.optim.Adam(model.parameters())
 
+        # TODO: Replace this code with code that attempts to load an existing dataset and falls
+        # further back in the pipeline.
+        #   if dataset_artifact exists:
+        #       load dataset from disk and train
+        #   elif datasource artifact exists:
+        #       load source and create dataset
+        #       train on dataset
+        #   else
+        #       create datasource
+        #       create dataset
+        #       train on dataset
+        # TODO: The code below is specific to a PyTorchDataSet. Look into AutoTS/other libraries
+        # to see how this might be made generic
         # preprocess it so that we can input it into our training/testing
         # X is of the shape [#time series, #data points in each, #features at each point]
-        dfs = read_csv(self.defn.datasource, self.defn.frame_size)
-        self.dataset, self.testset = create_datasets(dfs, self.defn.input_features, self.defn.output_features, (False, 0), self.defn.frame_size, self.defn.overlap, self.defn.maximum_frames)
+        self.dataset, self.testset = self.defn.dataset.get()
         dataset_size = len(self.dataset)
 
         # train model on the data
@@ -121,8 +132,7 @@ class TimeSeriersNNRunner:
     
     def test(self, model):
         if self.testset is None:
-            dfs = read_csv(self.defn.datasource, self.defn.frame_size)
-            _, self.testset = create_datasets(dfs, self.defn.input_features, self.defn.output_features, (False, 0), self.defn.frame_size, self.defn.overlap, self.defn.maximum_frames)
+            _, self.testset = self.defn.dataset.get()
        
         model.eval()
         test_X, test_y = self.testset[:]

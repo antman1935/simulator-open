@@ -3,19 +3,19 @@ import torch
 from torch.nn.modules import Module
 from torch.nn.parameter import Parameter
 import torchcde
-from modeling.TimeSeriesNNDefinition import TimeSeriesNNDefinition
+from modeling.TimeSeriesNNDefinition import TimeSeriesNNDefinition, DataSet
 
 class ForecastRNN(torch.nn.Module):
-    def __init__(self, frame_size: int, input_channels: int, layers: list[tuple[str, int, dict]], output_channels: int, convolution: bool):
+    def __init__(self, datapoint_length: int, input_channels: int, layers: list[tuple[str, int, dict]], output_channels: int, convolution: bool):
         super(ForecastRNN, self).__init__()
-        self.frame_size = frame_size
+        self.datapoint_length = datapoint_length
         self.input_channels = input_channels
         self.output_channels = output_channels
         self.convolution = convolution
 
         if convolution:
             conv_features = input_channels * input_channels   
-            self.conv = torch.nn.Conv1d(input_channels, conv_features, self.frame_size // 2, groups=input_channels)
+            self.conv = torch.nn.Conv1d(input_channels, conv_features, self.datapoint_length // 2, groups=input_channels)
             prev_layer_channels = conv_features
         else:
             self.conv = None
@@ -68,10 +68,16 @@ class ForecastRNN(torch.nn.Module):
         return params
     
 class ForecastRNNDefinition(TimeSeriesNNDefinition):
-    def __init__(self, datasource: str, input_features: list[str], output_features: list[str], frame_size: int, overlap: float = 0.99, maximum_frames: int = 0, epochs=2, train_batch_size: int = 8, 
-                    layers: list[tuple[str, int, dict]] = [("LSTM", 128, {})],
-                    convolution: bool = False):
-        super().__init__(datasource, input_features, output_features, frame_size, overlap, maximum_frames, epochs, train_batch_size)
+    def __init__(self,
+                 dataset: DataSet, 
+                 input_features: list[str], 
+                 output_features: list[str], 
+                 datapoint_length: int, 
+                 epochs=2, 
+                 train_batch_size: int = 8, 
+                 layers: list[tuple[str, int, dict]] = [("LSTM", 128, {})],
+                 convolution: bool = False):
+        super().__init__(dataset, input_features, output_features, datapoint_length, epochs, train_batch_size)
         self.input_channels = (len(input_features) + 1)
         self.layers = layers
         self.output_channels = len(output_features)
@@ -79,7 +85,7 @@ class ForecastRNNDefinition(TimeSeriesNNDefinition):
     
 
     def generateModule(self) -> Module:
-        return ForecastRNN(self.frame_size,
+        return ForecastRNN(self.datapoint_length,
                          self.input_channels,
                          self.layers,
                          self.output_channels,

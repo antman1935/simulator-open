@@ -1,7 +1,14 @@
 from modeling.NeuralNetworkDefinition import NeuralNetworkDefinition
+from modeling.data_eng.DataSet.DataSet import DataSet
 from util.Exportable import ExportableType
 
 """
+TODO: This is out of date, but still a good explanation of how things are 
+working. Main issue with it is it is data preparation parameters have been
+moved out of the NN definition entirely. Instead, they are now inside
+a DataSet class and that determines how data cleaning and prep is done.
+We still include some parameters that define the dataset for convenience.
+
 This is the primary class of neural networks that this repository is
 concerned with, time series forcasters. The unifying theme of these
 networks is that they train/predict on a sequence of points and the
@@ -41,20 +48,16 @@ data is prepared and cleaned.
 """
 class TimeSeriesNNDefinition(NeuralNetworkDefinition):
     def __init__(self, 
-                 datasource: str, 
+                 dataset: DataSet, 
                  input_features: list[str], 
                  output_features: list[str], 
-                 frame_size: int, 
-                 overlap: float =0.99, 
-                 maximum_frames:int = 0, 
+                 datapoint_length: int,
                  epochs = 2, 
                  train_batch_size:int = 8):
-        self.datasource = datasource
+        self.dataset = dataset
         self.input_features = input_features
         self.output_features = output_features
-        self.frame_size = frame_size
-        self.overlap = overlap
-        self.maximum_frames = maximum_frames
+        self.datapoint_length = datapoint_length
         self.epochs = epochs
         self.train_batch_size = train_batch_size
     
@@ -65,12 +68,10 @@ class TimeSeriesNNDefinition(NeuralNetworkDefinition):
         running = super().export_keys()
         running.append(
           {
-            "datasource": self.datasource,
+            "dataset": self.dataset.exportableDescriptor(),
             "input_features": self.input_features,
             "output_features": self.output_features,
-            "frame_size": self.frame_size,
-            "overlap": self.overlap,
-            "maximum_frames": self.maximum_frames,
+            "datapoint_length": self.datapoint_length,
             "epochs": self.epochs,
             "train_batch_size": self.train_batch_size
           }

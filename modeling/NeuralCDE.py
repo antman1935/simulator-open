@@ -2,6 +2,7 @@ import torch
 from torch.nn.modules import Module
 import torchcde
 from modeling.TimeSeriesNNDefinition import TimeSeriesNNDefinition
+from modeling.data_eng.DataSet.PyTorchDataSet import PyTorchDataSet
 import math
 
 
@@ -111,19 +112,16 @@ class NeuralCDE(torch.nn.Module):
     
 class NeuralCDEDefinition(TimeSeriesNNDefinition):
     def __init__(self,
-                 datasource: str, 
+                 dataset: PyTorchDataSet, 
                  input_features: list[str], 
                  output_features: list[str], 
-                 frame_size: int, 
-                 overlap: float = 0.99, 
-                 maximum_frames: int = 0, 
+                 datapoint_length: int, 
                  epochs=2, 
                  train_batch_size: int = 8, 
                  hidden_channels: int = 128, 
                  hidden_layer_widths: list[int] = [128], 
-                 dropout_layers: list[float] = [True, True], 
-                 interpolation="cubic"):
-        super().__init__(datasource, input_features, output_features, frame_size, overlap, maximum_frames, epochs, train_batch_size)
+                 dropout_layers: list[float] = [True, True]):
+        super().__init__(dataset, input_features, output_features, datapoint_length, epochs, train_batch_size)
         self.input_channels = len(input_features) + 1
         self.hidden_channels = hidden_channels
         self.output_channels = len(output_features)
@@ -134,7 +132,7 @@ class NeuralCDEDefinition(TimeSeriesNNDefinition):
         assert len(hidden_layer_widths) > 0, "CDEFunc requires that we have at least one hidden layer"
         assert len(hidden_layer_widths) + 1  == len(dropout_layers), "There should be a dropout layer setting for the input to each layer."
 
-        self.interpolation = interpolation
+        self.interpolation = "cubic" if dataset.cubic_interp else "linear"
 
     
 

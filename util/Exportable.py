@@ -27,17 +27,18 @@ def check_distinct_keys(target, other):
 class ExportableType(Enum):
     Model = 0
     DataSource  = 1
+    DataSet = 2
 
 def relative_path_prefix(type: ExportableType):
-    model_hyper_params = 'modeling/hyperparameters'
-    data_source = 'modeling/datasources'
-    match (type):
-        case ExportableType.Model:
-            return model_hyper_params
-        case ExportableType.DataSource:
-            return data_source
-        case _:
-            raise Exception("Invalid ExportableType")
+    paths = {
+        ExportableType.Model: 'modeling/hyperparameters',
+        ExportableType.DataSource: 'modeling/datasources',
+        ExportableType.DataSet: 'modeling/datasets',
+    }
+    if not type in paths.keys():
+        raise Exception("Invalid ExportableType")
+    return paths[type]
+
 """
 Represents a configuration object that can be exported to a pickle and reloaded
 from the pickle file. Usually a subclass will be able to generate or load an
