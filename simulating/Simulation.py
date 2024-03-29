@@ -1,6 +1,7 @@
-from multiprocessing import Pool, Lock, Process, Manager, Queue
+from multiprocessing import Process, Queue
+import asyncio
 from modeling.TimeSeriesNNRunner import TimeSeriersNNRunner
-from simulating.SimObject import SimObject, Reference
+from simulating.SimObject import SimObject
 from simulating.MixerSimulation import Valve, Mixer, MixerConfig
 from util.Exportable import Exportable, ExportableType
 from time import sleep, time
@@ -44,13 +45,26 @@ class Simulator:
         assert ref_name in self.references, f"'{ref_name}' does not exist."
         return self.references[ref_name].get()
     
+    def setReferences(self, mapping):
+        for key, value in mapping.items():
+            self.setReferenceValue(key, value)
+
+    def getReferences(self, names):
+        ret = {}
+        for name in names:
+            ret[name] = self.getReferenceValue(name)
+        return ret
+    
     def ref(self, ref_name):
         assert ref_name in self.references, f"'{ref_name}' does not exist."
         return self.references[ref_name]
     
 class Operation(Enum):
-    READ = 1
-    WRITE = 2
+    STOP = 0
+    GET = 1
+    SET = 2
+    MULTIGET = 3
+    MULTISET = 4
     
 def simulation_runner(simulation_defn, inQueue, outQueue):
     # TODO: define a simulation definition class to generate a simulation from
@@ -86,18 +100,30 @@ def simulation_runner(simulation_defn, inQueue, outQueue):
             if (inQueue.empty()):
                 sleep(0.01)
             else:
-                query, args = inQueue.get()
+                id, operation, args = inQueue.get()
 
-                match (query):
-                    case Operation.READ:
-                        id, reference = args
+                match (operation):
+                    case Operation.GET:
+                        reference = args
                         value = sim.getReferenceValue(reference)
                         outQueue.put((id, value))
-                    case Operation.WRITE:
-                        id, reference, value = args
+                    case Operation.MULTIGET:
+                        names = args
+                        value = sim.getReferences(names)
+                        outQueue.put((id, value))
+                    case Operation.SET:
+                        reference, value = args
                         sim.setReferenceValue(reference, value)
                         outQueue.put((id, True))
-    pass
+                    case Operation.MULTISET:
+                        mapping = args
+                        sim.setReferences(mapping)
+                        outQueue.put((id, True))
+                    case Operation.STOP:
+                        while not inQueue.empty():
+                            id, operation, args = inQueue.get()
+                            outQueue.put((id, "Server shutting down."))
+                        return
     
 class SimulatorServer:
     def __init__(self, simulation_defn = "PO-TAY-TOES"):
@@ -105,39 +131,54 @@ class SimulatorServer:
         self.outQueue = Queue()
         self.sim_process = Process(target=simulation_runner, args = (simulation_defn, self.inQueue, self.outQueue))
         self.sim_process.start()
-        self.lock = Lock() # only used to get request id
         self.req_id = 0
         self.next_req = 0
+        self.out_flag = asyncio.Event()
+        self.stopping = False
+
+    async def _processRequest(self, operation: Operation, parameters):
+        if self.stopping:
+            return "Server shutting down."
         
-    def setReferenceValue(self, ref_name, value):
-        id = None
-        with self.lock:
-            id = self.req_id
-            self.req_id += 1
-        self.inQueue.put((Operation.WRITE, (id, ref_name, value)))
+        # get req id
+        id = self.req_id
+        self.req_id += 1
 
+        self.out_flag.clear()
+        self.inQueue.put((id, operation, parameters))
+
+        # wait until we know the next_req has changed to our turn
         while self.next_req != id:
-            sleep(0.05)
+            await self.out_flag.wait()
+        self.out_flag.clear()
 
+        # TODO: this blocks until the queue has a value. Ideally we could 
+        # have a flag that is set only when the outQueue has data. We'd
+        # end up with a liveness coroutine that checks the queue, sets the
+        # flag if there is data, and sleeps for some small epsilon. I
+        # don't like the sound of it, so I am leaving this blocking wait
+        # until I decide what to do.
         val, ret = self.outQueue.get()
+        assert val == id, f"Response id {val} does not match expectations {id}."
+
+        # notify waiters that it is their turn
         self.next_req += 1
-        assert val == id and ret, "Set query failed."
+        self.out_flag.set()
         return ret
+        
+    async def setReferenceValue(self, ref_name, value):
+        return self._processRequest(Operation.SET, (ref_name, value))
 
-    def getReferenceValue(self, ref_name):
-        id = None
-        with self.lock:
-            id = self.req_id
-            self.req_id += 1
-        self.inQueue.put((Operation.READ, (id, ref_name)))
+    async def getReferenceValue(self, ref_name):
+        return await self._processRequest(Operation.GET, ref_name)
+    
+    async def setReferences(self, mapping):
+        return await self._processRequest(Operation.MULTISET, mapping)
 
-        while self.next_req != id:
-            sleep(0.05)
-
-        val, ret = self.outQueue.get()
-        self.next_req += 1
-        assert val == id, "Set query failed."
-        return ret
+    async def getReferences(self, names):
+        return await self._processRequest(Operation.MULTIGET, names)
     
     def stop(self):
-        self.sim_process.kill()
+        self.stopping = True
+        self.inQueue.put((-1, Operation.STOP, None))
+        self.sim_process.join()

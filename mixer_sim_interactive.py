@@ -1,11 +1,9 @@
 from simulating.Simulation import SimulatorServer
 import matplotlib.pyplot as plt
 import time
+import asyncio
 
-def simulator_server():
-    pass
-
-if __name__ == "__main__":
+async def main():
     # simulator is created and runs in a backgroud process.
     simServer = SimulatorServer()
     series = {"time": [], "temp": [], "level": [], "in1": [], "in2": [], "out": []}
@@ -27,30 +25,30 @@ if __name__ == "__main__":
         time.sleep(0.9)
         match (step):
             case 0:
-                if simServer.getReferenceValue("Mixer.Level") < 600 and simServer.getReferenceValue("Mixer.Outlet.Position") == 0:
-                    simServer.setReferenceValue("Mixer.Inlet1.CLS", True)
-                    simServer.setReferenceValue("Mixer.Inlet1.OLS", True)
-                elif simServer.getReferenceValue("Mixer.Level") >= 600:
-                    simServer.setReferenceValue("Mixer.Inlet1.CLS", False)
-                    simServer.setReferenceValue("Mixer.Inlet1.OLS", False)
+                if await simServer.getReferenceValue("Mixer.Level") < 600 and await simServer.getReferenceValue("Mixer.Outlet.Position") == 0:
+                    await simServer.setReferenceValue("Mixer.Inlet1.CLS", True)
+                    await simServer.setReferenceValue("Mixer.Inlet1.OLS", True)
+                elif await simServer.getReferenceValue("Mixer.Level") >= 600:
+                    await simServer.setReferenceValue("Mixer.Inlet1.CLS", False)
+                    await simServer.setReferenceValue("Mixer.Inlet1.OLS", False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
             case 3:
-                if simServer.getReferenceValue("Mixer.Level") < 980 and simServer.getReferenceValue("Mixer.Inlet1.Position") == 0:
-                    simServer.setReferenceValue("Mixer.Inlet2.CLS", True)
-                    simServer.setReferenceValue("Mixer.Inlet2.OLS", True)
-                elif simServer.getReferenceValue("Mixer.Level") >= 980:
-                    simServer.setReferenceValue("Mixer.Inlet2.CLS", False)
-                    simServer.setReferenceValue("Mixer.Inlet2.OLS", False)
+                if await simServer.getReferenceValue("Mixer.Level") < 980 and await simServer.getReferenceValue("Mixer.Inlet1.Position") == 0:
+                    await simServer.setReferenceValue("Mixer.Inlet2.CLS", True)
+                    await simServer.setReferenceValue("Mixer.Inlet2.OLS", True)
+                elif await simServer.getReferenceValue("Mixer.Level") >= 980:
+                    await simServer.setReferenceValue("Mixer.Inlet2.CLS", False)
+                    await simServer.setReferenceValue("Mixer.Inlet2.OLS", False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
             case 18:
-                if simServer.getReferenceValue("Mixer.Level") > 0 and simServer.getReferenceValue("Mixer.Inlet2.Position") == 0:
-                    simServer.setReferenceValue("Mixer.Outlet.CLS", True)
-                    simServer.setReferenceValue("Mixer.Outlet.OLS", True)
-                elif simServer.getReferenceValue("Mixer.Level") == 0:
-                    simServer.setReferenceValue("Mixer.Outlet.CLS", False)
-                    simServer.setReferenceValue("Mixer.Outlet.OLS", False)
+                if await simServer.getReferenceValue("Mixer.Level") > 0 and await simServer.getReferenceValue("Mixer.Inlet2.Position") == 0:
+                    await simServer.setReferenceValue("Mixer.Outlet.CLS", True)
+                    await simServer.setReferenceValue("Mixer.Outlet.OLS", True)
+                elif await simServer.getReferenceValue("Mixer.Level") == 0:
+                    await simServer.setReferenceValue("Mixer.Outlet.CLS", False)
+                    await simServer.setReferenceValue("Mixer.Outlet.OLS", False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
             case 19:
@@ -61,11 +59,11 @@ if __name__ == "__main__":
                 step += 1
     
         series['time'].append(iter)
-        series['level'].append(simServer.getReferenceValue("Mixer.Level"))
-        series['temp'].append(simServer.getReferenceValue("Mixer.Temperature"))
-        series['in1'].append(simServer.getReferenceValue("Inlet1.Position"))
-        series['in2'].append(simServer.getReferenceValue("Inlet2.Position"))
-        series['out'].append(simServer.getReferenceValue("Outlet.Position"))
+        series['level'].append(await simServer.getReferenceValue("Mixer.Level"))
+        series['temp'].append(await simServer.getReferenceValue("Mixer.Temperature"))
+        series['in1'].append(await simServer.getReferenceValue("Inlet1.Position"))
+        series['in2'].append(await simServer.getReferenceValue("Inlet2.Position"))
+        series['out'].append(await simServer.getReferenceValue("Outlet.Position"))
 
         graph1.clear()
         graph2.clear()
