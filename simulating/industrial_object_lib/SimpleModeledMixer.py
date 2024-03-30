@@ -1,6 +1,8 @@
+from modeling.TimeSeriesNNRunner import TimeSeriersNNRunner
 from simulating.industrial_object_lib.Valve import Valve
 from simulating.SimObject import SimObject, Reference
 from simulating.ModeledObject import ModeledObject
+from util.Exportable import Exportable, ExportableType
 import torch
 import random
     
@@ -58,12 +60,17 @@ class MixerTemperatureModel(ModeledObject):
         return [("Temperature", self.temperature_ref)]
     
 class MixerConfig:
-    def __init__(self, level_model: torch.nn.Module, temp_model: torch.nn.Module, level_model_frames: int, temp_model_frames: int):
+    def __init__(self, level_model_id: str, temp_model_id: str):
+        level_model_defn = Exportable.loadExportable(ExportableType.Model, level_model_id)
+        temp_model_defn = Exportable.loadExportable(ExportableType.Model,temp_model_id)
+
+        level_model, _ = TimeSeriersNNRunner(level_model_defn).load()
+        temp_model, _ = TimeSeriersNNRunner(temp_model_defn).load()
         self.level_model = level_model
-        self.level_model_frames = level_model_frames
+        self.level_model_frames = level_model_defn.datapoint_length
 
         self.temp_model = temp_model
-        self.temp_model_frames = temp_model_frames
+        self.temp_model_frames = temp_model_defn.datapoint_length
     
 class Mixer(SimObject):
     def __init__(self, config: MixerConfig):

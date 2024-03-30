@@ -1,9 +1,7 @@
 from multiprocessing import Process, Queue
 import asyncio
-from modeling.TimeSeriesNNRunner import TimeSeriersNNRunner
 from simulating.SimObject import SimObject
 from simulating.industrial_object_lib.SimpleModeledMixer import Mixer, MixerConfig
-from util.Exportable import Exportable, ExportableType
 from time import sleep, time
 from enum import Enum
 
@@ -72,16 +70,10 @@ def simulation_runner(simulation_defn, inQueue, outQueue):
     # load simulation file and instantiate all objects in a simulator env
     temp_model_id = "9b6d688e-1a0ac5c1"
     level_model_id = "9e4d503d-4a31070"
-    
-    level_model_defn = Exportable.loadExportable(ExportableType.Model, level_model_id)
-    temp_model_defn = Exportable.loadExportable(ExportableType.Model,temp_model_id)
-
-    level_model, _ = TimeSeriersNNRunner(level_model_defn).load()
-    temp_model, _ = TimeSeriersNNRunner(temp_model_defn).load()
         
     # Define all of the objects in situation
     sim = Simulator()
-    config = MixerConfig(level_model, temp_model, level_model_defn.datapoint_length, temp_model_defn.datapoint_length)
+    config = MixerConfig(level_model_id, temp_model_id)
     mixer = sim.AddObject("Mixer", Mixer(config))
 
     runtime = 0
