@@ -28,8 +28,7 @@ if __name__ == "__main__":
         
     # Define all of the objects in situation
     sim = Simulator()
-    config = MixerConfig(level_model_id, temp_model_id)
-    mixer = sim.AddObject("Mixer", Mixer(config))
+    mixer = sim.AddObject("Mixer", Mixer(level_model_id, temp_model_id))
 
     # Run the simulation and generate new timeseries from model
     iters = 1000

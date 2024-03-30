@@ -1,7 +1,5 @@
-from simulating.industrial_object_lib.SimpleModeledMixer import MixerConfig, Mixer
+from simulating.industrial_object_lib.SimpleModeledMixer import Mixer
 from simulating.Simulation import Simulator
-from modeling.TimeSeriesNNRunner import TimeSeriersNNRunner
-from util.Exportable import Exportable, ExportableType
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
@@ -28,8 +26,7 @@ if __name__ == "__main__":
         
     # Define all of the objects in situation
     sim = Simulator()
-    config = MixerConfig(level_model_id, temp_model_id)
-    mixer = sim.AddObject("Mixer", Mixer(config))
+    mixer = sim.AddObject("Mixer", Mixer(level_model_id, temp_model_id))
 
     # Run the simulation and generate new timeseries from model
     iters = 1000

@@ -1,7 +1,7 @@
 from multiprocessing import Process, Queue
 import asyncio
 from simulating.SimObject import SimObject
-from simulating.industrial_object_lib.SimpleModeledMixer import Mixer, MixerConfig
+from simulating.industrial_object_lib.SimpleModeledMixer import Mixer
 from time import sleep, time
 from enum import Enum
 
@@ -73,8 +73,7 @@ def simulation_runner(simulation_defn, inQueue, outQueue):
         
     # Define all of the objects in situation
     sim = Simulator()
-    config = MixerConfig(level_model_id, temp_model_id)
-    mixer = sim.AddObject("Mixer", Mixer(config))
+    mixer = sim.AddObject("Mixer", Mixer(level_model_id, temp_model_id))
 
     runtime = 0
     while True:

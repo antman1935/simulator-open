@@ -59,26 +59,20 @@ class MixerTemperatureModel(ModeledObject):
     def getReferences(self) -> list[tuple[str, Reference]]:
         return [("Temperature", self.temperature_ref)]
     
-class MixerConfig:
+class Mixer(SimObject):
     def __init__(self, level_model_id: str, temp_model_id: str):
+        self.inlet1 = Valve()
+        self.inlet2 = Valve()
+        self.outlet = Valve()
+
         level_model_defn = Exportable.loadExportable(ExportableType.Model, level_model_id)
         temp_model_defn = Exportable.loadExportable(ExportableType.Model,temp_model_id)
 
         level_model, _ = TimeSeriersNNRunner(level_model_defn).load()
         temp_model, _ = TimeSeriersNNRunner(temp_model_defn).load()
-        self.level_model = level_model
-        self.level_model_frames = level_model_defn.datapoint_length
-
-        self.temp_model = temp_model
-        self.temp_model_frames = temp_model_defn.datapoint_length
-    
-class Mixer(SimObject):
-    def __init__(self, config: MixerConfig):
-        self.inlet1 = Valve()
-        self.inlet2 = Valve()
-        self.outlet = Valve()
-        self._level_model = MixerLevelModel(config.level_model, config.level_model_frames, self.inlet1.position_ref, self.inlet2.position_ref, self.outlet.position_ref)
-        self._temp_model = MixerTemperatureModel(config.temp_model, config.temp_model_frames, self.inlet1.position_ref, self.inlet2.position_ref, self.outlet.position_ref, self._level_model.level_ref)
+        
+        self._level_model = MixerLevelModel(level_model, level_model_defn.datapoint_length, self.inlet1.position_ref, self.inlet2.position_ref, self.outlet.position_ref)
+        self._temp_model = MixerTemperatureModel(temp_model, temp_model_defn.datapoint_length, self.inlet1.position_ref, self.inlet2.position_ref, self.outlet.position_ref, self._level_model.level_ref)
         self.level = self._level_model.level
         self.temp = self._temp_model.temp
         
