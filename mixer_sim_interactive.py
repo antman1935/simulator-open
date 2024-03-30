@@ -61,9 +61,9 @@ async def main():
         series['time'].append(iter)
         series['level'].append(await simServer.getReferenceValue("Mixer.Level"))
         series['temp'].append(await simServer.getReferenceValue("Mixer.Temperature"))
-        series['in1'].append(await simServer.getReferenceValue("Inlet1.Position"))
-        series['in2'].append(await simServer.getReferenceValue("Inlet2.Position"))
-        series['out'].append(await simServer.getReferenceValue("Outlet.Position"))
+        series['in1'].append(await simServer.getReferenceValue("Mixer.Inlet1.Position"))
+        series['in2'].append(await simServer.getReferenceValue("Mixer.Inlet2.Position"))
+        series['out'].append(await simServer.getReferenceValue("Mixer.Outlet.Position"))
 
         graph1.clear()
         graph2.clear()

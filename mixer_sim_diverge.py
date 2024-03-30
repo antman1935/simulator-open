@@ -1,4 +1,4 @@
-from simulating.MixerSimulation import MixerConfig, Mixer, Valve
+from simulating.industrial_object_lib.SimpleModeledMixer import MixerConfig, Mixer
 from simulating.Simulation import Simulator
 from modeling.TimeSeriesNNRunner import TimeSeriersNNRunner
 from util.Exportable import Exportable, ExportableType
@@ -36,10 +36,7 @@ if __name__ == "__main__":
         
     # Define all of the objects in situation
     sim = Simulator()
-    inlet1 = sim.AddObject("Inlet1", Valve())
-    inlet2 = sim.AddObject("Inlet2", Valve())
-    outlet = sim.AddObject("Outlet", Valve())
-    config = MixerConfig(level_model, temp_model, level_model_defn.datapoint_length, temp_model_defn.datapoint_length, inlet1, inlet2, outlet)
+    config = MixerConfig(level_model, temp_model, level_model_defn.datapoint_length, temp_model_defn.datapoint_length)
     mixer = sim.AddObject("Mixer", Mixer(config))
 
     # Run the simulation and generate new timeseries from model
@@ -50,48 +47,48 @@ if __name__ == "__main__":
     for iter in range(iters):
         match (step):
             case 0:
-                if mixer.level < 600 and outlet.position == 0:
-                    inlet1.cls_ref.set(True)
-                    inlet1.ols_ref.set(True)
+                if mixer.level < 600 and mixer.outlet.position == 0:
+                    mixer.inlet1.cls_ref.set(True)
+                    mixer.inlet1.ols_ref.set(True)
                 elif mixer.level >= 600:
-                    inlet1.cls_ref.set(False)
-                    inlet1.ols_ref.set(False)
+                    mixer.inlet1.cls_ref.set(False)
+                    mixer.inlet1.ols_ref.set(False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
             case 3:
-                if mixer.level < 850 and inlet1.position == 0:
-                    inlet2.cls_ref.set(True)
-                    inlet2.ols_ref.set(True)
+                if mixer.level < 850 and mixer.inlet1.position == 0:
+                    mixer.inlet2.cls_ref.set(True)
+                    mixer.inlet2.ols_ref.set(True)
                 elif mixer.level >= 850:
-                    inlet2.cls_ref.set(False)
-                    inlet2.ols_ref.set(False)
+                    mixer.inlet2.cls_ref.set(False)
+                    mixer.inlet2.ols_ref.set(False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
             case 4:
-                if mixer.level > 250 and inlet2.position == 0:
-                    outlet.cls_ref.set(True)
-                    outlet.ols_ref.set(True)
+                if mixer.level > 250 and mixer.inlet2.position == 0:
+                    mixer.outlet.cls_ref.set(True)
+                    mixer.outlet.ols_ref.set(True)
                 elif mixer.level <= 250:
-                    outlet.cls_ref.set(False)
-                    outlet.ols_ref.set(False)
+                    mixer.outlet.cls_ref.set(False)
+                    mixer.outlet.ols_ref.set(False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
             case 5:
-                if mixer.level < 980 and outlet.position == 0:
-                    inlet2.cls_ref.set(True)
-                    inlet2.ols_ref.set(True)
+                if mixer.level < 980 and mixer.outlet.position == 0:
+                    mixer.inlet2.cls_ref.set(True)
+                    mixer.inlet2.ols_ref.set(True)
                 elif mixer.level >= 980:
-                    inlet2.cls_ref.set(False)
-                    inlet2.ols_ref.set(False)
+                    mixer.inlet2.cls_ref.set(False)
+                    mixer.inlet2.ols_ref.set(False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
             case 20:
-                if mixer.level > 0 and inlet2.position == 0:
-                    outlet.cls_ref.set(True)
-                    outlet.ols_ref.set(True)
+                if mixer.level > 0 and mixer.inlet2.position == 0:
+                    mixer.outlet.cls_ref.set(True)
+                    mixer.outlet.ols_ref.set(True)
                 elif mixer.level == 0:
-                    outlet.cls_ref.set(False)
-                    outlet.ols_ref.set(False)
+                    mixer.outlet.cls_ref.set(False)
+                    mixer.outlet.ols_ref.set(False)
                     print(f"step {step} complete at iter {iter}")
                     step += 1
             case 21:
@@ -105,9 +102,9 @@ if __name__ == "__main__":
         series['time'].append(iter)
         series['level'].append(mixer.level)
         series['temp'].append(mixer.temp)
-        series['in1'].append(inlet1.position)
-        series['in2'].append(inlet2.position)
-        series['out'].append(outlet.position)
+        series['in1'].append(mixer.inlet1.position)
+        series['in2'].append(mixer.inlet2.position)
+        series['out'].append(mixer.outlet.position)
 
     plt.plot(series['time'], series['level'])
     plt.plot(series['time'], series['temp'])

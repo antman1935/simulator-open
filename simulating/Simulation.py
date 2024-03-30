@@ -2,7 +2,7 @@ from multiprocessing import Process, Queue
 import asyncio
 from modeling.TimeSeriesNNRunner import TimeSeriersNNRunner
 from simulating.SimObject import SimObject
-from simulating.MixerSimulation import Valve, Mixer, MixerConfig
+from simulating.industrial_object_lib.SimpleModeledMixer import Mixer, MixerConfig
 from util.Exportable import Exportable, ExportableType
 from time import sleep, time
 from enum import Enum
@@ -81,10 +81,7 @@ def simulation_runner(simulation_defn, inQueue, outQueue):
         
     # Define all of the objects in situation
     sim = Simulator()
-    inlet1 = sim.AddObject("Inlet1", Valve())
-    inlet2 = sim.AddObject("Inlet2", Valve())
-    outlet = sim.AddObject("Outlet", Valve())
-    config = MixerConfig(level_model, temp_model, level_model_defn.datapoint_length, temp_model_defn.datapoint_length, inlet1, inlet2, outlet)
+    config = MixerConfig(level_model, temp_model, level_model_defn.datapoint_length, temp_model_defn.datapoint_length)
     mixer = sim.AddObject("Mixer", Mixer(config))
 
     runtime = 0
