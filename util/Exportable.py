@@ -28,12 +28,14 @@ class ExportableType(Enum):
     Model = 0
     DataSource  = 1
     DataSet = 2
+    Simulation = 3
 
 def relative_path_prefix(type: ExportableType):
     paths = {
         ExportableType.Model: 'modeling/hyperparameters',
         ExportableType.DataSource: 'modeling/datasource_configs',
         ExportableType.DataSet: 'modeling/dataset_configs',
+        ExportableType.Simulation: 'simulating/simulations'
     }
     if not type in paths.keys():
         raise Exception("Invalid ExportableType")

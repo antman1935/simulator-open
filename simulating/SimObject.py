@@ -43,3 +43,9 @@ class SimObject:
     """
     def getReferences(self) -> list[tuple[str, Reference]]:
         raise Exception("Unimplemented")
+    
+    """
+    Override this method to connect named references defined in the object's definition.
+    """
+    def resolveReferences(self, refs: dict[str, Reference]):
+        pass

@@ -2,6 +2,7 @@ modeling/models/
 modeling/hyperparameters/
 modeling/dataset*
 modeling/datasource*
+simulating/simulations/
 **/__pycache__/
 prototypes/
 results/

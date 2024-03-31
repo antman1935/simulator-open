@@ -1,14 +1,21 @@
 from fastapi import FastAPI
+from pydantic_settings import BaseSettings
 from contextlib import asynccontextmanager
 from typing_extensions import Annotated
+import sys
 
 simServer = None
 
+class Settings(BaseSettings):
+    SIM_ID: str
+settings = Settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    from simulating.Simulation import SimulatorServer
+    from simulating.SimServer import SimulatorServer
     global simServer
-    simServer = SimulatorServer()
+    global settings
+    print(settings.SIM_ID)
+    simServer = SimulatorServer(settings.SIM_ID)
     yield
     simServer.stop()
 
