@@ -3,9 +3,17 @@ from simulating.ModeledObject import ModeledObject
 import torch
 
 class MixerLevelModel(ModeledObject):
-    def __init__(self, model: torch.nn.Module, datapoint_length: int, cubic: bool, inlet1_position: Reference, inlet2_position: Reference, outlet_position: Reference):
+    def __init__(self, model: torch.nn.Module, datapoint_length: int, cubic: bool, inlet1_position: Reference, inlet2_position: Reference, outlet_position: Reference, level_out_ref: Reference = None):
         self.level = 0
-        self.level_ref = Reference(0, 0, 1000)
+
+        if level_out_ref is not None:
+            self.level_ref = level_out_ref
+            self.level_ref._value = 0
+            self.level_ref.min = 0
+            self.level_ref.max = 1000
+        else:
+            self.level_ref = Reference(0, 0, 1000)
+
         self.inlet1_position = inlet1_position
         self.inlet2_position = inlet2_position
         self.outlet_position = outlet_position

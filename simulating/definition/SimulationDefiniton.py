@@ -3,8 +3,9 @@ from simulating.SimObject import Reference, SimObject
 from simulating.Simulation import Simulator
 
 class ExternalReference:
-    def __init__(self, name: str, required: bool = True):
+    def __init__(self, name: str, desc: str, required: bool = True):
         self.name = name
+        self.description = desc
         self.required = required
 
 """
@@ -58,7 +59,7 @@ class SimObjectDefn(Exportable):
     """
     def resolveReferences(self, object: SimObject, references: dict[str, Reference]):
         resolutions = {}
-        for ext_ref_name, ref_name in self.ref_map.keys():
+        for ext_ref_name, ref_name in self.ref_map.items():
             if not ref_name in references:
                 # TODO: refactor to make it possible to check this at the time of saving the simulation
                 raise Exception(f"Reference {ref_name} does not exist (ext_ref: {ext_ref_name})")
