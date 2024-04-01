@@ -1,6 +1,7 @@
 from multiprocessing import Process, Queue
 import asyncio
 from simulating.definition.SimulationDefiniton import SimulationDefn
+from simulating.Simulation import SimulationError
 from time import sleep, time
 from enum import Enum
 
@@ -51,12 +52,12 @@ def simulation_runner(sim_id: str, inQueue, outQueue):
                         outQueue.put((id, value))
                     case Operation.SET:
                         reference, value = args
-                        sim.setReferenceValue(reference, value)
-                        outQueue.put((id, True))
+                        e = sim.setReferenceValue(reference, value)
+                        outQueue.put((id, e))
                     case Operation.MULTISET:
                         mapping = args
-                        sim.setReferences(mapping)
-                        outQueue.put((id, True))
+                        e = sim.setReferences(mapping)
+                        outQueue.put((id, e))
                     
     
 class SimulatorServer:
@@ -98,6 +99,8 @@ class SimulatorServer:
         # notify waiters that it is their turn
         self.next_req += 1
         self.out_flag.set()
+        if isinstance(ret, SimulationError):
+            raise Exception(str(ret.error_type), ret.msg)
         return ret
     
     async def getAPI(self):

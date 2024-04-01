@@ -1,4 +1,6 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse, PlainTextResponse
 from pydantic_settings import BaseSettings
 from contextlib import asynccontextmanager
 from typing_extensions import Annotated
@@ -6,7 +8,7 @@ import inspect
 
 simServer = None
 
-def get_endpoint_parameters(attrs):
+def get_endpoint_parameters(attrs, default_value):
     # replace periods to guarantee names are valid python vars,
     # provide the mapping so that we can give the exact reference name
     # NOTE: Possible TODO - do something about names resolving to the same
@@ -20,17 +22,18 @@ def get_endpoint_parameters(attrs):
             param,
             inspect.Parameter.POSITIONAL_OR_KEYWORD,
             annotation=type_,
-            default=None
+            default=default_value
         ) for param, type_ in kwargs.items()
     ]
 
     return kwargs, mapping, params
 
 def object_set_endpoint(object_name: str, attrs):
-    kwargs, mapping, params = get_endpoint_parameters(attrs)
+    kwargs, mapping, params = get_endpoint_parameters(attrs, None)
 
     async def endpoint(**kwargs):
         ref_settings = {f"{object_name}.{mapping[arg]}": kwargs[arg] for arg, val in kwargs.items() if val is not None}
+        print(ref_settings)
         return await simServer.setReferences(ref_settings)
     
     endpoint.__signature__ = inspect.Signature(params)
@@ -44,7 +47,7 @@ def create_object_set_endpoint(app: FastAPI, object_name: str, attrs: list[str])
     app.add_api_route(f"/{object_name}/set/", object_set_endpoint(object_name, endpoint_params), methods=["GET"])
 
 def object_get_endpoint(object_name: str, attrs):
-    kwargs, mapping, params = get_endpoint_parameters(attrs)
+    kwargs, mapping, params = get_endpoint_parameters(attrs, True)
 
     async def endpoint(**kwargs):
         refs = [f"{object_name}.{mapping[arg]}" for arg, val in kwargs.items() if val]
@@ -89,6 +92,13 @@ async def lifespan(app: FastAPI):
     simServer.stop()
 
 app = FastAPI(lifespan=lifespan)
+
+@app.exception_handler(Exception)
+async def exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=422,
+        content=exc.args,
+    )
 
 @app.get("/get/{query}")
 async def get(query: Annotated[str, "Comma separated list of absolute reference names to return."]):
