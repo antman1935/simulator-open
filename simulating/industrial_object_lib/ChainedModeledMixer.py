@@ -39,8 +39,10 @@ class DownstreamMixer(SimObject):
         return [
             ("Level", self.level_ref),
             ("Temperature", self.temperature_ref),
-            ("Inlet1.Position", self.inlet1_position), 
-            ("Inlet2.Position", self.inlet2_position),
+            # TODO: do something to make this possible. aliasing is useful. Maybe 
+            # setting aliases in a second round of reference gathering is necessary.
+            # ("Inlet1.Position", self.inlet1_position), 
+            # ("Inlet2.Position", self.inlet2_position),
         ] + \
         [(f"Outlet.{ref_name}", ref) for ref_name, ref in self.outlet.getReferences()]
     

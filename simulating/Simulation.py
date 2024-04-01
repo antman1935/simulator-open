@@ -51,4 +51,14 @@ class Simulator:
         assert ref_name in self.references, f"'{ref_name}' does not exist."
         return self.references[ref_name]
     
+    def getAPI(self):
+        api = {}
+        for obj_name, obj in self.objects.items():
+            api[obj_name] = {}
+
+            for (ref_name, ref) in obj.getReferences():
+                api[obj_name][ref_name] = (ref.read_only, ref.min, ref.max)
+
+        return api
+    
 

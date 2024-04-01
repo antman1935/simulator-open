@@ -6,10 +6,11 @@ from enum import Enum
 
 class Operation(Enum):
     STOP = 0
-    GET = 1
-    SET = 2
-    MULTIGET = 3
-    MULTISET = 4
+    GET_API = 1
+    GET = 2
+    SET = 3
+    MULTIGET = 4
+    MULTISET = 5
     
 def simulation_runner(sim_id: str, inQueue, outQueue):
     defn = SimulationDefn.load(sim_id)
@@ -32,6 +33,14 @@ def simulation_runner(sim_id: str, inQueue, outQueue):
                 id, operation, args = inQueue.get()
 
                 match (operation):
+                    case Operation.STOP:
+                        while not inQueue.empty():
+                            id, operation, args = inQueue.get()
+                            outQueue.put((id, "Server shutting down."))
+                        return
+                    case Operation.GET_API:
+                        api = sim.getAPI()
+                        outQueue.put((id, api))
                     case Operation.GET:
                         reference = args
                         value = sim.getReferenceValue(reference)
@@ -48,11 +57,7 @@ def simulation_runner(sim_id: str, inQueue, outQueue):
                         mapping = args
                         sim.setReferences(mapping)
                         outQueue.put((id, True))
-                    case Operation.STOP:
-                        while not inQueue.empty():
-                            id, operation, args = inQueue.get()
-                            outQueue.put((id, "Server shutting down."))
-                        return
+                    
     
 class SimulatorServer:
     def __init__(self, sim_id: str):
@@ -94,9 +99,12 @@ class SimulatorServer:
         self.next_req += 1
         self.out_flag.set()
         return ret
+    
+    async def getAPI(self):
+        return await self._processRequest(Operation.GET_API, None)
         
     async def setReferenceValue(self, ref_name, value):
-        return self._processRequest(Operation.SET, (ref_name, value))
+        return await self._processRequest(Operation.SET, (ref_name, value))
 
     async def getReferenceValue(self, ref_name):
         return await self._processRequest(Operation.GET, ref_name)
